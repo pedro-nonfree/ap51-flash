@@ -85,6 +85,8 @@ struct ether_arp {
 #define IPPORT_TFTP	69
 #endif
 
+#define IPPORT_BOOTP 68
+
 #ifndef IPPORT_ICMP
 #define IPPORT_ICMP	1
 #endif

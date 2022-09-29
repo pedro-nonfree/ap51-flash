@@ -292,6 +292,12 @@ static void handle_udp_packet(const char *packet_buff, int packet_buff_len,
 			return;
 
 		break;
+        // FIXME handle netboot/bootp package
+    case FLASH_MODE_NETBOOT:
+        if (udphdr->source != htons(IPPORT_BOOTP))
+			return;
+
+        break;
 	default:
 		return;
 	}

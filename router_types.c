@@ -150,10 +150,11 @@ int router_types_detect_main(struct node *node, const char *packet_buff,
 	for (router_type = router_types; *router_type; ++router_type) {
 		if (!(*router_type)->detect_main)
 			goto next;
+        
+        ret = (*router_type)->detect_main(*router_type,
+        priv, packet_buff,
+        packet_buff_len);
 
-		ret = (*router_type)->detect_main(*router_type,
-						  priv, packet_buff,
-						  packet_buff_len);
 		if (ret != 1)
 			goto next;
 

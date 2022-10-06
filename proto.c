@@ -894,31 +894,53 @@ void handle_eth_packet(char *packet_buff, int packet_buff_len)
 	if (memcmp(eth_hdr->ether_shost, bcast_addr, ETH_ALEN) == 0)
 		return;
 
-	switch (ntohs(eth_hdr->ether_type)) {
-	case ETH_P_ARP:
-		node = node_list_get(eth_hdr->ether_shost);
-		if (!node)
-			return;
-		handle_arp_packet(packet_buff + ETH_HLEN,
-				  packet_buff_len - ETH_HLEN,
-				  node);
-		break;
-	case ETH_P_IP:
-		if (memcmp(eth_hdr->ether_dhost, bcast_addr, ETH_ALEN) == 0)
-			return;
+    switch (node->status) {
+	case NODE_STATUS_UNKNOWN:
+		node->status = NODE_STATUS_DETECTING;
+		/* fall through */
+	case NODE_STATUS_DETECTING:
+		ret = router_types_detect_main(node, packet_buff,
+					       packet_buff_len);
+		if (ret != 1)
+			break;
 
-		node = node_list_get(eth_hdr->ether_shost);
-		if (!node)
-			return;
+		node->status = NODE_STATUS_DETECTED;
+		/* fall through */
+	case NODE_STATUS_DETECTED:
+	case NODE_STATUS_FLASHING:
+	case NODE_STATUS_RESET_SENT:
+	case NODE_STATUS_FINISHED:
+	case NODE_STATUS_REBOOTED:
+	case NODE_STATUS_NO_FLASH:
+        // traffic flow handling after router detection
+        switch (ntohs(eth_hdr->ether_type)) {
+        case ETH_P_ARP:
+            node = node_list_get(eth_hdr->ether_shost);
+            if (!node)
+                return;
+            handle_arp_packet(packet_buff + ETH_HLEN,
+                    packet_buff_len - ETH_HLEN,
+                    node);
+            break;
+        case ETH_P_IP:
+            if (memcmp(eth_hdr->ether_dhost, bcast_addr, ETH_ALEN) == 0)
+                return;
 
-		handle_ip_packet(packet_buff + ETH_HLEN,
-				 packet_buff_len - ETH_HLEN,
-				 node);
-		break;
-	default:
-		/* silently drop packet */
-		break;
+            node = node_list_get(eth_hdr->ether_shost);
+            if (!node)
+                return;
+
+            handle_ip_packet(packet_buff + ETH_HLEN,
+                    packet_buff_len - ETH_HLEN,
+                    node);
+            break;
+        default:
+            /* silently drop packet */
+            break;
+        }
+        break;
 	}
+    
 }
 
 int proto_init(void)

@@ -43,6 +43,9 @@ static int tftp_server_detect_main(const struct router_type *router_type,
 	tftp_server = container_of(router_type, struct router_tftp_server,
 				   router_type);
 
+    if (ntohs(eth_hdr->ether_type) != ETH_P_ARP)
+        return 1
+        
 	if (!len_check(packet_buff_len, sizeof(struct ether_arp), "ARP"))
 		goto out;
 

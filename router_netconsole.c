@@ -36,6 +36,9 @@ static int ap121f_detect_main(const struct router_type *router_type __attribute_
 	struct ether_arp *arphdr;
 	int ret = 0;
 
+    if (ntohs(eth_hdr->ether_type) != ETH_P_ARP)
+        return 1
+        
 	if (!len_check(packet_buff_len, sizeof(struct ether_arp), "ARP"))
 		goto out;
 

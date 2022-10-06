@@ -307,6 +307,9 @@ static int redboot_detect_main(const struct router_type *router_type __attribute
 	struct redboot_priv *redboot_priv = priv;
 	int ret = 0;
 
+    if (ntohs(eth_hdr->ether_type) != ETH_P_ARP)
+        return 1
+        
 	if (!len_check(packet_buff_len, sizeof(struct ether_arp), "ARP"))
 		goto out;
 

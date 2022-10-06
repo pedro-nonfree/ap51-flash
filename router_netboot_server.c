@@ -49,24 +49,23 @@ static int netboot_server_detect_main(const struct router_type *router_type,
 	struct ether_arp *arphdr;
 	int ret = 0;
 
+    struct ether_header *eth_hdr;
+    
 	netboot_server = container_of(router_type, struct router_netboot_server,
 				   router_type);
 
-	if (!len_check(packet_buff_len, sizeof(struct ether_arp), "ARP"))
-		goto out;
+    eth_hdr = (struct ether_header *)packet_buff;
 
-	arphdr = (struct ether_arp *)packet_buff;
-	if (arphdr->ea_hdr.ar_op != htons(ARPOP_REPLY))
-		goto out;
-
-	if (load_ip_addr(arphdr->arp_spa) != htonl(netboot_server->ip))
-		goto out;
-
-	if (server_priv->arp_count < netboot_server->wait_arp_count) {
-		server_priv->arp_count++;
-		goto out;
-	}
-
+    if (ntohs(eth_hdr->ether_type) != ETH_P_IP)
+        return 1;
+    
+    
+    // for loop all ouis
+    for(i = 0, i < ARRAY_SIZE(netboot_server->oui_mac); i++) {
+        eth_hdr->ether_shost
+    }
+    
+    
 	ret = 1;
 
 out:
@@ -104,4 +103,24 @@ const struct router_netboot_server mikrotik = {
 	.server_ip = NETBOOT_SERVER_IP,
     .range_min = NETBOOT_RANGE_MIN,
     .range_max = NETBOOT_RANGE_MAX,
+    // src https://hwaddress.com/company/routerboardcom/
+    .oui_mac = [
+        0x00,0x0C,0x42,
+        0x08,0x55,0x31,
+        0x18,0xFD,0x74,
+        0x2C,0xC8,0x1B,
+        0x48,0x8F,0x5A,
+        0x4C,0x5E,0x0C,
+        0x64,0xD1,0x54,
+        0x6C,0x3B,0x6B,
+        0x74,0x4D,0x28,
+        0xB8,0x69,0xF4,
+        0xC4,0xAD,0x34,
+        0xCC,0x2D,0xE0,
+        0xD4,0xCA,0x6D,
+        0xDC,0x2C,0x6E,
+        0xE4,0x8D,0x8C,
+    ],
 };
+
+
